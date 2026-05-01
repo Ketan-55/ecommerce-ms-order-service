@@ -10,7 +10,7 @@ public class Order {
     private Long id;
 
     private Long userId;
-    private Long productId;
+    private String productId;
 
     private Integer quantity;
     private Double totalPrice;
@@ -36,11 +36,11 @@ public class Order {
         this.userId = userId;
     }
 
-    public Long getProductId() {
+    public String getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(String productId) {
         this.productId = productId;
     }
 
