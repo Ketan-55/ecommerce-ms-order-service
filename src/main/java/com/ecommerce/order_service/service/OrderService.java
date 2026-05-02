@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 
@@ -19,6 +20,9 @@ public class OrderService {
     RestTemplate restTemplate;
 
     @Autowired
+    WebClient webClient;
+
+    @Autowired
     OrderRepository orderRepository;
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -26,10 +30,19 @@ public class OrderService {
     public Order createOrder(Order order) {
         // Call Product Service
         String url ="http://localhost:8084/products/"+ order.getProductId();
+       //USING REST TEMPLATE
+         //APIResponse apiresponse = restTemplate.getForObject(url, APIResponse.class);
 
-        APIResponse<ProductResponseDTO> apiresponse = restTemplate.getForObject(url, APIResponse.class);
+        //USING WEBCLIENT
+        APIResponse apiresponse = webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(APIResponse.class)
+                .block();
 
         ProductResponseDTO product = objectMapper.convertValue(apiresponse.getData(), ProductResponseDTO.class);
+
+
 
         // Calculate total price
         Double totalPrice = product.getPrice() * order.getQuantity();
