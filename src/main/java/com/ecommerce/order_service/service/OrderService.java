@@ -4,6 +4,8 @@ import com.ecommerce.order_service.config.RestTemplateConfig;
 import com.ecommerce.order_service.dto.APIResponse;
 import com.ecommerce.order_service.dto.ProductResponseDTO;
 import com.ecommerce.order_service.entity.Order;
+import com.ecommerce.order_service.event.OrderEvent;
+import com.ecommerce.order_service.kafka.KafkaProducer;
 import com.ecommerce.order_service.repository.OrderRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ public class OrderService {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    KafkaProducer kafkaProducer;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -48,11 +53,22 @@ public class OrderService {
         Double totalPrice = product.getPrice() * order.getQuantity();
         order.setTotalPrice(totalPrice);
 
-        //
+        //set a
         order.setStatus("CREATED");
         order.setCreatedAt(LocalDateTime.now());
         order.setCreatedBy("SYSTEM");
 
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        //create order event
+        OrderEvent orderEvent = new OrderEvent();
+        orderEvent.setOrderId(savedOrder.getId());
+        orderEvent.setProductId(savedOrder.getProductId());
+        orderEvent.setTotalPrice(savedOrder.getTotalPrice());
+        orderEvent.setUserId(savedOrder.getUserId());
+
+        //send event to kafka topic
+        kafkaProducer.sendOrderEvent(orderEvent);
+
+        return savedOrder;
     }
 }
