@@ -65,6 +65,7 @@ public class OrderService {
         orderEvent.setProductId(savedOrder.getProductId());
         orderEvent.setTotalPrice(savedOrder.getTotalPrice());
         orderEvent.setUserId(savedOrder.getUserId());
+        orderEvent.setQuantity(savedOrder.getQuantity());
 
         //send event to kafka topic
         kafkaProducer.sendOrderEvent(orderEvent);

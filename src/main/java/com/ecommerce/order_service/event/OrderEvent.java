@@ -9,4 +9,5 @@ public class OrderEvent {
     private Long userId;
     private String productId;
     private Double totalPrice;
+    private Integer quantity;
 }
