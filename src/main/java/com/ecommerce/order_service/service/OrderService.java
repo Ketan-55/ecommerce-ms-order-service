@@ -30,45 +30,61 @@ public class OrderService {
     @Autowired
     KafkaProducer kafkaProducer;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    //ObjectMapper objectMapper = new ObjectMapper();
 
     public Order createOrder(Order order) {
         // Call Product Service
-        String url ="http://localhost:8084/products/"+ order.getProductId();
+        //String url ="http://localhost:8084/products/"+ order.getProductId();
        //USING REST TEMPLATE
          //APIResponse apiresponse = restTemplate.getForObject(url, APIResponse.class);
 
         //USING WEBCLIENT
-        APIResponse apiresponse = webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(APIResponse.class)
-                .block();
-
-        ProductResponseDTO product = objectMapper.convertValue(apiresponse.getData(), ProductResponseDTO.class);
+//        APIResponse apiresponse = webClient.get()
+//                .uri(url)
+//                .retrieve()
+//                .bodyToMono(APIResponse.class)
+//                .block();
+//
+//        ProductResponseDTO product = objectMapper.convertValue(apiresponse.getData(), ProductResponseDTO.class);
 
 
 
         // Calculate total price
-        Double totalPrice = product.getPrice() * order.getQuantity();
-        order.setTotalPrice(totalPrice);
+       //// Double totalPrice = product.getPrice() * order.getQuantity();
+        //order.setTotalPrice(totalPrice);
 
         //set a
+       // order.setStatus("CREATED");
+//        order.setCreatedAt(LocalDateTime.now());
+//        order.setCreatedBy("SYSTEM");
+//
+//        Order savedOrder = orderRepository.save(order);
+//        //create order event
+//        OrderEvent orderEvent = new OrderEvent();
+//        orderEvent.setOrderId(savedOrder.getId());
+//        orderEvent.setProductId(savedOrder.getProductId());
+//        orderEvent.setTotalPrice(savedOrder.getTotalPrice());
+//        orderEvent.setUserId(savedOrder.getUserId());
+//        orderEvent.setQuantity(savedOrder.getQuantity());
+//
+//        //send event to kafka topic
+//        kafkaProducer.sendOrderEvent(orderEvent);
+
         order.setStatus("CREATED");
         order.setCreatedAt(LocalDateTime.now());
         order.setCreatedBy("SYSTEM");
 
         Order savedOrder = orderRepository.save(order);
-        //create order event
-        OrderEvent orderEvent = new OrderEvent();
-        orderEvent.setOrderId(savedOrder.getId());
-        orderEvent.setProductId(savedOrder.getProductId());
-        orderEvent.setTotalPrice(savedOrder.getTotalPrice());
-        orderEvent.setUserId(savedOrder.getUserId());
-        orderEvent.setQuantity(savedOrder.getQuantity());
 
-        //send event to kafka topic
-        kafkaProducer.sendOrderEvent(orderEvent);
+        OrderEvent event = new OrderEvent();
+
+        event.setOrderId(savedOrder.getId());
+        event.setProductId(savedOrder.getProductId());
+        event.setQuantity(savedOrder.getQuantity());
+
+
+
+        kafkaProducer.sendOrderEvent(event);
 
         return savedOrder;
     }
